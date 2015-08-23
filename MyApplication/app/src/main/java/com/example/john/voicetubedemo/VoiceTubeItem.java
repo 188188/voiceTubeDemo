@@ -6,8 +6,9 @@ package com.example.john.voicetubedemo;
 public class VoiceTubeItem {
     public String name;
     public String imageUrl;
-    public VoiceTubeItem(String name, String imageUrl) {
+    public String firstLink;
+    public String firstLinkHtml;
+    public VoiceTubeItem(String name) {
         this.name = name;
-        this.imageUrl = imageUrl;
     }
 }

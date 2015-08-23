@@ -13,22 +13,22 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by john on 2015/8/23.
  */
-public class CategoryAdapter extends BaseAdapter{
+public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentListener {
     ArrayList<VoiceTubeItem> items;
     int voiceTubeImageHeight;
     LayoutInflater mInflater;
+    HashMap<String, ImageView> nameImageViewHashMap = new HashMap<String, ImageView>();
     public CategoryAdapter(Context context) {
         items = Utilities.fillVoiceTubeItems();
         mInflater = LayoutInflater.from(context);
+        Utilities.setOnFetchWebContentListener(this);
     }
 
     public void setVoiceTubeImageHeight(int height) {
@@ -66,12 +66,29 @@ public class CategoryAdapter extends BaseAdapter{
         if (items.get(position).imageUrl != null) {
             new DownloadImageTask(holder.backgroundImage)
                     .execute(items.get(position).imageUrl);
-        } else {
+        } else if (position == 0) {
             RelativeLayout.LayoutParams backgroundImageParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, voiceTubeImageHeight);
             holder.backgroundImage.setLayoutParams(backgroundImageParams);
+        } else {
+            nameImageViewHashMap.put(items.get(position).name, holder.backgroundImage);
         }
 
         return convertView;
+    }
+
+    @Override
+    public void onFetchWebContentFinish(String name, String imageUrl, String firstLink) {
+        ImageView backgroundImage = nameImageViewHashMap.get(name);
+        if (backgroundImage != null) {
+            new DownloadImageTask(backgroundImage)
+                    .execute(imageUrl);
+        }
+        for (int i = 1; i < items.size(); i++) {
+            if (name.equals(items.get(i).name)) {
+                items.get(i).imageUrl = imageUrl;
+                items.get(i).firstLink = firstLink;
+            }
+        }
     }
 
     class ItemHolder {
