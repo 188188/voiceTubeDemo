@@ -4,5 +4,6 @@
     <string name="app_name">VoiceTubeDemo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_activity_voice_tube_detail">activity_voice_tube_detail</string>
 
 </resources>

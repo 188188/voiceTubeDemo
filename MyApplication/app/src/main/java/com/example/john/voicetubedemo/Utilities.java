@@ -1,5 +1,6 @@
 package com.example.john.voicetubedemo;
 
+import android.content.Context;
 import android.renderscript.Element;
 import android.text.Html;
 import android.util.Log;
@@ -9,6 +10,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -61,19 +64,19 @@ public class Utilities {
         HttpExecutor executor = new HttpExecutor(get) {
             @Override
             public void handleResult(HttpResponse response) {
-                InputStream instream = null;
+                InputStream inputStream = null;
                 if (response.getEntity() != null) {
                     try {
-                        instream = response.getEntity().getContent();
+                        inputStream = response.getEntity().getContent();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                String result = inputStreamToString(instream);
-                int tumb = result.indexOf("<div class=\"thumb-container\">");
-                int herfQuotes = result.indexOf("<a href=\"", tumb) + "<a href=\"".length();
-                int herfQuotes2 = result.indexOf("\"", herfQuotes);
-                String link = result.substring(herfQuotes, herfQuotes2);
+                String result = inputStreamToString(inputStream);
+                org.jsoup.nodes.Document doc = Jsoup.parse(result);
+                org.jsoup.nodes.Element div = doc.select("div[class=thumb-container]").first();
+                org.jsoup.nodes.Element a = div.select("a").first();
+                String link = a.attr("href");
                 fetchImageUrlHtml(name, link);
             }
 
@@ -90,20 +93,21 @@ public class Utilities {
         HttpExecutor executor = new HttpExecutor(get) {
             @Override
             public void handleResult(HttpResponse response) {
-                InputStream instream = null;
+                InputStream inputStream = null;
                 if (response.getEntity() != null) {
                     try {
-                        instream = response.getEntity().getContent();
+                        inputStream = response.getEntity().getContent();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                String result = inputStreamToString(instream);
-                int image = result.indexOf("aligncenter");
-                int imageQuotes = result.indexOf("src=\"", image) + "src=\"".length();
-                int imageQuotes2 = result.indexOf("\"", imageQuotes);
-                String imageUrl = result.substring(imageQuotes, imageQuotes2);
-                mOnFetchWebContentListener.onFetchWebContentFinish(name, encodeURL(imageUrl), link);
+                String result = inputStreamToString(inputStream);
+                org.jsoup.nodes.Document doc = Jsoup.parse(result);
+                org.jsoup.nodes.Element elemContent = doc.select("div[class=content]").first();
+                org.jsoup.nodes.Element img = elemContent.select("img").first();
+                String content = elemContent.toString();
+                String imgUrl = img.attr("src");
+                mOnFetchWebContentListener.onFetchWebContentFinish(name, encodeURL(imgUrl), link, content);
             }
 
             @Override
@@ -113,6 +117,7 @@ public class Utilities {
         };
         pool.execute(executor);
     }
+
 
     static private String inputStreamToString(InputStream is) {
         String s = "";

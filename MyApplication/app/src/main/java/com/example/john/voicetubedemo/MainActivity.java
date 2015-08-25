@@ -1,13 +1,16 @@
 package com.example.john.voicetubedemo;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -53,13 +56,13 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
         });
+        category.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                OnVoiceTubeImageClick((VoiceTubeItem)categoryAdapter.getItem(position));
+            }
+        });
     }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus){
-        categoryAdapter.setVoiceTubeImageHeight(voiceTubeImage.getHeight());
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -81,5 +84,18 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void OnVoiceTubeImageClick(VoiceTubeItem item) {
+        if (item.firstLinkHtmlContent != null) {
+            Intent intent = new Intent(this, VoiceTubeDetailActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("name", item.name);
+            bundle.putString("imageUrl", item.imageUrl);
+            bundle.putString("firstLink", item.firstLink);
+            bundle.putString("firstLinkHtmlContent", item.firstLinkHtmlContent);
+            intent.putExtras(bundle);
+            startActivity(intent);
+        }
     }
 }

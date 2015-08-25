@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -72,12 +73,11 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
         } else {
             nameImageViewHashMap.put(items.get(position).name, holder.backgroundImage);
         }
-
         return convertView;
     }
 
     @Override
-    public void onFetchWebContentFinish(String name, String imageUrl, String firstLink) {
+    public void onFetchWebContentFinish(String name, String imageUrl, String firstLink, String firstLinkHtmlContent) {
         ImageView backgroundImage = nameImageViewHashMap.get(name);
         if (backgroundImage != null) {
             new DownloadImageTask(backgroundImage)
@@ -87,6 +87,7 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
             if (name.equals(items.get(i).name)) {
                 items.get(i).imageUrl = imageUrl;
                 items.get(i).firstLink = firstLink;
+                items.get(i).firstLinkHtmlContent = firstLinkHtmlContent;
             }
         }
     }

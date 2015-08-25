@@ -1,21 +1,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="com.example.john.voicetubedemo.activity_voice_tube_detail">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/voice_tube_image"
         android:id="@+id/voice_tube_image"
         android:adjustViewBounds="true"
         android:layout_alignParentTop="true"
+        android:scaleType="fitXY"
         />
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/category"
+        android:id="@+id/html_content_list_view"
         android:listSelector="@android:color/transparent"
         android:cacheColorHint="@android:color/transparent"></ListView>
 
