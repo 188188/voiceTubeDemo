@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,11 +27,13 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
     ArrayList<VoiceTubeItem> items;
     int voiceTubeImageHeight;
     LayoutInflater mInflater;
+    Context mContext;
     HashMap<String, ImageView> nameImageViewHashMap = new HashMap<String, ImageView>();
     public CategoryAdapter(Context context) {
         items = Utilities.fillVoiceTubeItems();
         mInflater = LayoutInflater.from(context);
         Utilities.setOnFetchWebContentListener(this);
+        mContext = context;
     }
 
     public void setVoiceTubeImageHeight(int height) {
@@ -65,8 +69,7 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
         }
         holder.nameText.setText(items.get(position).name);
         if (items.get(position).imageUrl != null) {
-            new DownloadImageTask(holder.backgroundImage)
-                    .execute(items.get(position).imageUrl);
+            Picasso.with(mContext).load(items.get(position).imageUrl).into(holder.backgroundImage);
         } else if (position == 0) {
             RelativeLayout.LayoutParams backgroundImageParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, voiceTubeImageHeight);
             holder.backgroundImage.setLayoutParams(backgroundImageParams);
@@ -77,11 +80,15 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
     }
 
     @Override
-    public void onFetchWebContentFinish(String name, String imageUrl, String firstLink, String firstLinkHtmlContent) {
-        ImageView backgroundImage = nameImageViewHashMap.get(name);
+    public void onFetchWebContentFinish(String name, final String imageUrl, String firstLink, String firstLinkHtmlContent) {
+        final ImageView backgroundImage = nameImageViewHashMap.get(name);
         if (backgroundImage != null) {
-            new DownloadImageTask(backgroundImage)
-                    .execute(imageUrl);
+            ((MainActivity)mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Picasso.with(mContext).load(imageUrl).into(backgroundImage);
+                }
+            });
         }
         for (int i = 1; i < items.size(); i++) {
             if (name.equals(items.get(i).name)) {
@@ -98,30 +105,5 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
     class ItemHolder {
         TextView nameText;
         ImageView backgroundImage;
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
     }
 }

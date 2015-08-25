@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.InputStream;
 
 /**
@@ -55,41 +57,17 @@ public class VoiceTubeDetailActivity extends Activity {
         htmlContentAdapter = new HtmlContentAdapter(this, mVoiceTubeItem.firstLinkHtmlContent);
         htmlContentListView.setAdapter(htmlContentAdapter);
         if (mVoiceTubeItem.imageUrl != null) {
-            new DownloadImageTask(voiceTubeImage)
-                    .execute(mVoiceTubeItem.imageUrl);
-        }
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.getViewTreeObserver().addOnGlobalLayoutListener(
+            Picasso.with(this).load(mVoiceTubeItem.imageUrl).into(voiceTubeImage);
+            voiceTubeImage.getViewTreeObserver().addOnGlobalLayoutListener(
                     new ViewTreeObserver.OnGlobalLayoutListener() {
                         @Override
                         public void onGlobalLayout() {
-                            bmImage.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                            htmlContentAdapter.setBlankViewHeight(bmImage.getMeasuredHeight());
+                            if (voiceTubeImage.getMeasuredHeight() != 0)
+                                voiceTubeImage.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                            htmlContentAdapter.setBlankViewHeight(voiceTubeImage.getMeasuredHeight());
                         }
-                    });
-            bmImage.setImageBitmap(result);
+                    }
+            );
         }
     }
 }
