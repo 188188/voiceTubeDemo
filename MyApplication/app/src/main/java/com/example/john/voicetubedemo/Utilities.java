@@ -1,6 +1,7 @@
 package com.example.john.voicetubedemo;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.renderscript.Element;
 import android.text.Html;
 import android.util.Log;
@@ -41,18 +42,44 @@ public class Utilities {
     static private ThreadPoolExecutor pool = new ThreadPoolExecutor(5, 50, 3000, TimeUnit.MICROSECONDS, workQueue, Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
     static OnFetchWebContentListener mOnFetchWebContentListener;
     static String protocol = "http://tw.blog.voicetube.com/category/";
+    static public SharedPreferences sharedPreferences;
+    static final public String DATA = "data";
+    static final public String VOICETUBE = "VoiceTube";
+    static final public String SKILL = "skill";
+    static final public String NEWS = "news";
+    static final public String CAREER = "career";
+    static final public String SENSE = "sense";
+    static final public String HINT = "hint";
+    static final public String FIRSTLINK = "firstLink";
+    static final public String CONTENT = "content";
+    static final public String IMAGE = "image";
     static ArrayList<VoiceTubeItem> fillVoiceTubeItems() {
         ArrayList<VoiceTubeItem> items = new ArrayList<VoiceTubeItem>();
-        items.add(new VoiceTubeItem("VoiceTube"));
-        items.add(new VoiceTubeItem("skill"));
-        items.add(new VoiceTubeItem("news"));
-        items.add(new VoiceTubeItem("career"));
-        items.add(new VoiceTubeItem("sense"));
-        items.add(new VoiceTubeItem("hint"));
+        items.add(new VoiceTubeItem(VOICETUBE));
+        items.add(new VoiceTubeItem(SKILL));
+        items.add(new VoiceTubeItem(NEWS));
+        items.add(new VoiceTubeItem(CAREER));
+        items.add(new VoiceTubeItem(SENSE));
+        items.add(new VoiceTubeItem(HINT));
         for (int i = 1; i < items.size(); i++) {
+            fillVoiceTubeItemFromSharedPreferences(items.get(i));
             fetchFirstLink(items.get(i).name);
         }
         return items;
+    }
+
+    static void fillVoiceTubeItemFromSharedPreferences(VoiceTubeItem item) {
+        item.firstLink = sharedPreferences.getString(item.name + "_" + FIRSTLINK, null);
+        item.firstLinkHtmlContent = sharedPreferences.getString(item.name + "_" + CONTENT, null);
+        item.imageUrl = sharedPreferences.getString(item.name + "_" + IMAGE, null);
+    }
+
+    static void saveVoiceTubeItemToSharedPreferences(VoiceTubeItem item) {
+        sharedPreferences.edit()
+                .putString(item.name + "_" + FIRSTLINK, item.firstLink)
+                .putString(item.name + "_" + CONTENT, item.firstLinkHtmlContent)
+                .putString(item.name + "_" + IMAGE, item.imageUrl)
+                .commit();
     }
 
     static void setOnFetchWebContentListener(OnFetchWebContentListener callback) {

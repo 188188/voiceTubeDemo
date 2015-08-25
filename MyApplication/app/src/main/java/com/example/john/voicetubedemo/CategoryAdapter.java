@@ -85,9 +85,12 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
         }
         for (int i = 1; i < items.size(); i++) {
             if (name.equals(items.get(i).name)) {
-                items.get(i).imageUrl = imageUrl;
-                items.get(i).firstLink = firstLink;
-                items.get(i).firstLinkHtmlContent = firstLinkHtmlContent;
+                if (!firstLink.equals(items.get(i).firstLink)) {
+                    items.get(i).imageUrl = imageUrl;
+                    items.get(i).firstLink = firstLink;
+                    items.get(i).firstLinkHtmlContent = firstLinkHtmlContent;
+                    Utilities.saveVoiceTubeItemToSharedPreferences(items.get(i));
+                }
             }
         }
     }

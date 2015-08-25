@@ -26,6 +26,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Utilities.sharedPreferences = getSharedPreferences(Utilities.DATA, 0);
         voiceTubeImage = (ImageView) findViewById(R.id.voice_tube_image);
         category = (ListView) findViewById(R.id.category);
         categoryAdapter = new CategoryAdapter(this);
