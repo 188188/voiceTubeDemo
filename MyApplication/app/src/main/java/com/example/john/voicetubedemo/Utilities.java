@@ -44,7 +44,7 @@ public class Utilities {
     static String protocol = "http://tw.blog.voicetube.com/category/";
     static public SharedPreferences sharedPreferences;
     static final public String DATA = "data";
-    static final public String VOICETUBE = "VoiceTube";
+    static final public String VOICETUBE = "VoiceTube Long Press To See Next Article";
     static final public String SKILL = "skill";
     static final public String NEWS = "news";
     static final public String CAREER = "career";
@@ -53,6 +53,9 @@ public class Utilities {
     static final public String FIRSTLINK = "firstLink";
     static final public String CONTENT = "content";
     static final public String IMAGE = "image";
+    static public Context mainActivityContext;
+    static int fetchCount = 0;
+
     static ArrayList<VoiceTubeItem> fillVoiceTubeItems() {
         ArrayList<VoiceTubeItem> items = new ArrayList<VoiceTubeItem>();
         items.add(new VoiceTubeItem(VOICETUBE));
@@ -82,11 +85,60 @@ public class Utilities {
                 .commit();
     }
 
+    static public void refreshCountDown() {
+        fetchCount--;
+        if (fetchCount == 0)
+            setRefreshStop();
+    }
+
+    static void setRefreshStart() {
+        ((MainActivity)mainActivityContext).setRefreshStart();
+    }
+
+    static void setRefreshStop() {
+        ((MainActivity)mainActivityContext).setRefreshStop();
+    }
+
     static void setOnFetchWebContentListener(OnFetchWebContentListener callback) {
         mOnFetchWebContentListener = callback;
     }
 
+    static void fetchNextLink(final VoiceTubeItem item) {
+        if (item == null || fetchCount > 0)
+            return;
+        setRefreshStart();
+        fetchCount++;
+        HttpGet get = new HttpGet(protocol + item.name);
+        HttpExecutor executor = new HttpExecutor(get) {
+            @Override
+            public void handleResult(HttpResponse response) {
+                InputStream inputStream = null;
+                if (response.getEntity() != null) {
+                    try {
+                        inputStream = response.getEntity().getContent();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                String result = inputStreamToString(inputStream);
+                org.jsoup.nodes.Document doc = Jsoup.parse(result);
+                Elements divs = doc.select("div[class=thumb-container]");
+                org.jsoup.nodes.Element div = divs.get(item.position + 1);
+                org.jsoup.nodes.Element a = div.select("a").first();
+                String link = a.attr("href");
+                fetchImageUrlHtml(item.name, link, item.position + 1);
+            }
+
+            @Override
+            public void handleException(Exception e) {
+                refreshCountDown();
+            }
+        };
+        pool.execute(executor);
+    }
+
     static void fetchFirstLink(final String name) {
+        fetchCount++;
         HttpGet get = new HttpGet(protocol + name);
         HttpExecutor executor = new HttpExecutor(get) {
             @Override
@@ -104,18 +156,18 @@ public class Utilities {
                 org.jsoup.nodes.Element div = doc.select("div[class=thumb-container]").first();
                 org.jsoup.nodes.Element a = div.select("a").first();
                 String link = a.attr("href");
-                fetchImageUrlHtml(name, link);
+                fetchImageUrlHtml(name, link, 0);
             }
 
             @Override
             public void handleException(Exception e) {
-
+                refreshCountDown();
             }
         };
         pool.execute(executor);
     }
 
-    static void fetchImageUrlHtml(final String name, final String link) {
+    static void fetchImageUrlHtml(final String name, final String link, final int position) {
         HttpGet get = new HttpGet(link);
         HttpExecutor executor = new HttpExecutor(get) {
             @Override
@@ -134,12 +186,12 @@ public class Utilities {
                 org.jsoup.nodes.Element img = elemContent.select("img").first();
                 String content = elemContent.toString();
                 String imgUrl = img.attr("src");
-                mOnFetchWebContentListener.onFetchWebContentFinish(name, encodeURL(imgUrl), link, content);
+                mOnFetchWebContentListener.onFetchWebContentFinish(name, encodeURL(imgUrl), link, content, position);
             }
 
             @Override
             public void handleException(Exception e) {
-
+                refreshCountDown();
             }
         };
         pool.execute(executor);

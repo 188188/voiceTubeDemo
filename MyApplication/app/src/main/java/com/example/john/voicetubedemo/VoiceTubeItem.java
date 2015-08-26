@@ -8,6 +8,7 @@ public class VoiceTubeItem {
     public String imageUrl;
     public String firstLink;
     public String firstLinkHtmlContent;
+    public int position = 0;
     public VoiceTubeItem() {}
     public VoiceTubeItem(String name) {
         this.name = name;

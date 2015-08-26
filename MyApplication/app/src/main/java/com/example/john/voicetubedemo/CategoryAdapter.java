@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
@@ -73,31 +74,36 @@ public class CategoryAdapter extends BaseAdapter implements OnFetchWebContentLis
         } else if (position == 0) {
             RelativeLayout.LayoutParams backgroundImageParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, voiceTubeImageHeight);
             holder.backgroundImage.setLayoutParams(backgroundImageParams);
-        } else {
-            nameImageViewHashMap.put(items.get(position).name, holder.backgroundImage);
+            holder.backgroundImage.setImageDrawable(null);
         }
+        nameImageViewHashMap.put(items.get(position).name, holder.backgroundImage);
         return convertView;
     }
 
     @Override
-    public void onFetchWebContentFinish(String name, final String imageUrl, String firstLink, String firstLinkHtmlContent) {
-        final ImageView backgroundImage = nameImageViewHashMap.get(name);
-        if (backgroundImage != null) {
-            ((MainActivity)mContext).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Picasso.with(mContext).load(imageUrl).into(backgroundImage);
-                }
-            });
-        }
+    public void onFetchWebContentFinish(String name, final String imageUrl, String firstLink, String firstLinkHtmlContent, int position) {
         for (int i = 1; i < items.size(); i++) {
             if (name.equals(items.get(i).name)) {
                 if (!firstLink.equals(items.get(i).firstLink)) {
                     items.get(i).imageUrl = imageUrl;
                     items.get(i).firstLink = firstLink;
                     items.get(i).firstLinkHtmlContent = firstLinkHtmlContent;
+                    items.get(i).position = position;
                     Utilities.saveVoiceTubeItemToSharedPreferences(items.get(i));
+                    final ImageView backgroundImage = nameImageViewHashMap.get(name);
+                    if (backgroundImage != null) {
+                        ((MainActivity)mContext).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Picasso.with(mContext).load(imageUrl).into(backgroundImage);
+                            }
+                        });
+                    }
+                    Utilities.refreshCountDown();
+                } else {
+                    Utilities.refreshCountDown();
                 }
+                return;
             }
         }
     }

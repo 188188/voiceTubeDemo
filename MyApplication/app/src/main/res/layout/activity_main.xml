@@ -3,20 +3,31 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/voice_tube_image"
-        android:id="@+id/voice_tube_image"
-        android:adjustViewBounds="true"
-        android:layout_alignParentTop="true"
-        />
-
-    <ListView
+    <android.support.v4.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/category"
-        android:listSelector="@android:color/transparent"
-        android:cacheColorHint="@android:color/transparent"></ListView>
+        android:id="@+id/swipe_refresh_layout">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/voice_tube_image"
+                android:id="@+id/voice_tube_image"
+                android:adjustViewBounds="true"
+                android:layout_alignParentTop="true"
+                />
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/category"
+                android:listSelector="@android:color/transparent"
+                android:cacheColorHint="@android:color/transparent"></ListView>
+            </RelativeLayout>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

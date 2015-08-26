@@ -1,6 +1,9 @@
 package com.example.john.voicetubedemo;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +19,13 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     ListView category;
     CategoryAdapter categoryAdapter;
     ImageView voiceTubeImage;
+    SwipeRefreshLayout swipeRefreshLayout;
+    boolean isLongPress = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +34,16 @@ public class MainActivity extends ActionBarActivity {
         Utilities.sharedPreferences = getSharedPreferences(Utilities.DATA, 0);
         voiceTubeImage = (ImageView) findViewById(R.id.voice_tube_image);
         category = (ListView) findViewById(R.id.category);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setEnabled(false);
+        Utilities.mainActivityContext = this;
         categoryAdapter = new CategoryAdapter(this);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
         voiceTubeImage.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
@@ -60,31 +74,20 @@ public class MainActivity extends ActionBarActivity {
         category.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                OnVoiceTubeImageClick((VoiceTubeItem)categoryAdapter.getItem(position));
+                if (!isLongPress)
+                    OnVoiceTubeImageClick((VoiceTubeItem) categoryAdapter.getItem(position));
+                isLongPress = false;
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        category.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position != 0)
+                    Utilities.fetchNextLink((VoiceTubeItem) categoryAdapter.getItem(position));
+                isLongPress = true;
+                return false;
+            }
+        });
     }
 
     public void OnVoiceTubeImageClick(VoiceTubeItem item) {
@@ -98,5 +101,23 @@ public class MainActivity extends ActionBarActivity {
             intent.putExtras(bundle);
             startActivity(intent);
         }
+    }
+
+    public void setRefreshStart() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
+    }
+
+    public void setRefreshStop() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 }
